@@ -1,15 +1,18 @@
 import { FiUsers, FiUserCheck, FiUserX, FiAward } from 'react-icons/fi';
 
 const UsuarioStats = ({ usuarios }) => {
+    // Solo contar usuarios activos (excluir eliminados lógicamente)
+    const usuariosActivos = usuarios.filter(u => u.estado === 1);
+
     const stats = {
-        total: usuarios.length,
-        activos: usuarios.filter(u => u.estado === 1).length,
-        inactivos: usuarios.filter(u => u.estado === 0).length,
+        total: usuariosActivos.length,
+        activos: usuariosActivos.filter(u => u.estado === 1).length,
+        inactivos: usuarios.filter(u => u.estado === 0).length, // Mostrar inactivos si existen
         porPerfil: {}
     };
 
-    // Count users per profile
-    usuarios.forEach(usuario => {
+    // Count users per profile - solo usuarios activos
+    usuariosActivos.forEach(usuario => {
         const perfil = usuario.nombrePerfil || 'Sin perfil';
         stats.porPerfil[perfil] = (stats.porPerfil[perfil] || 0) + 1;
     });

@@ -63,8 +63,11 @@ const UsuariosPage = () => {
         }
     };
 
-    // Filter logic
+    // Filter logic - Solo mostrar usuarios activos por defecto
     const filteredUsuarios = usuariosData?.filter(usuario => {
+        // Filtrar solo usuarios activos (estado = 1) - oculta los eliminados lógicamente
+        if (usuario.estado !== 1) return false;
+
         if (filters.perfil && usuario.rolId !== filters.perfil) return false;
         if (filters.estado !== null && usuario.estado !== filters.estado) return false;
         return true;
@@ -104,7 +107,7 @@ const UsuariosPage = () => {
                 </div>
             </div>
 
-            <UsuarioStats usuarios={usuariosData || []} />
+            <UsuarioStats usuarios={filteredUsuarios} />
 
             <UsuarioFilters filters={filters} setFilters={setFilters} />
 

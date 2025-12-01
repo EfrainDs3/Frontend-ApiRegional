@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import axios from '../../config/axios';
 import {
     FiHome, FiUsers, FiShield, FiGrid, FiLock,
     FiChevronLeft, FiChevronRight
@@ -10,15 +11,70 @@ const Sidebar = () => {
     const { user } = useAuth();
     const location = useLocation();
     const [collapsed, setCollapsed] = useState(false);
+    const [allowedModules, setAllowedModules] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // TODO: Fetch allowed modules from API
-    const menuItems = [
-        { path: '/', icon: FiHome, label: 'Dashboard' },
+    // El módulo de seguridad (ID 1) incluye estas páginas
+    const securityPages = [
         { path: '/usuarios', icon: FiUsers, label: 'Usuarios' },
         { path: '/perfiles', icon: FiShield, label: 'Perfiles' },
         { path: '/modulos', icon: FiGrid, label: 'Módulos' },
         { path: '/accesos', icon: FiLock, label: 'Accesos' },
     ];
+
+    useEffect(() => {
+        const fetchAllowedModules = async () => {
+            if (!user || !user.idPerfil) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                const response = await axios.get(`/accesos/perfil/${user.idPerfil}/completo`);
+                setAllowedModules(response.data);
+            } catch (err) {
+                console.error('Error al cargar módulos permitidos:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchAllowedModules();
+    }, [user]);
+
+    // Construir menú dinámico basado en los accesos
+    const buildMenuItems = () => {
+        const items = [
+            { path: '/', icon: FiHome, label: 'Dashboard' } // Dashboard siempre visible
+        ];
+
+        allowedModules.forEach(modulo => {
+            // Si tiene acceso al módulo de seguridad (ID 1), agregar todas las páginas de seguridad
+            if (modulo.idModulo === 1) {
+                items.push(...securityPages);
+            }
+            // Otros módulos se agregarán aquí cuando se implementen
+        });
+
+        // Eliminar duplicados basados en path
+        const uniqueItems = items.filter((item, index, self) =>
+            index === self.findIndex((t) => t.path === item.path)
+        );
+
+        return uniqueItems;
+    };
+
+    const menuItems = buildMenuItems();
+
+    if (loading) {
+        return (
+            <aside className={`bg-coffee-900 text-cream-100 transition-all duration-300 flex flex-col ${collapsed ? 'w-20' : 'w-64'}`}>
+                <div className="p-4 border-b border-coffee-800 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-cream-100"></div>
+                </div>
+            </aside>
+        );
+    }
 
     return (
         <aside
@@ -42,26 +98,35 @@ const Sidebar = () => {
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-4">
-                <ul className="space-y-1 px-2">
-                    {menuItems.map((item) => {
-                        const isActive = location.pathname === item.path;
-                        return (
-                            <li key={item.path}>
-                                <Link
-                                    to={item.path}
-                                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-200 ${isActive
+                {menuItems.length === 1 ? (
+                    // Solo tiene Dashboard (sin otros accesos)
+                    <div className="px-4 py-8 text-center">
+                        <p className="text-xs text-cream-200">
+                            {!collapsed && 'Sin módulos asignados'}
+                        </p>
+                    </div>
+                ) : (
+                    <ul className="space-y-1 px-2">
+                        {menuItems.map((item) => {
+                            const isActive = location.pathname === item.path;
+                            return (
+                                <li key={item.path}>
+                                    <Link
+                                        to={item.path}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition duration-200 ${isActive
                                             ? 'bg-terracotta-500 text-white shadow-md'
                                             : 'hover:bg-coffee-800 text-cream-200'
-                                        }`}
-                                    title={collapsed ? item.label : ''}
-                                >
-                                    <item.icon size={20} />
-                                    {!collapsed && <span>{item.label}</span>}
-                                </Link>
-                            </li>
-                        );
-                    })}
-                </ul>
+                                            }`}
+                                        title={collapsed ? item.label : ''}
+                                    >
+                                        <item.icon size={20} />
+                                        {!collapsed && <span>{item.label}</span>}
+                                    </Link>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                )}
             </nav>
 
             {/* User Profile */}
@@ -83,3 +148,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
