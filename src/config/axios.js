@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Use environment variable or default to the provided API URL
-// IMPORTANTE: Usar HTTPS para SSL - Actualizado 2025-12-01 21:33
+// IMPORTANTE: Cambiar a HTTP por problema de certificado SSL
 //const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:8080';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://comidas.spring.informaticapp.com:2030';
 
@@ -12,7 +12,10 @@ const axiosInstance = axios.create({
     headers: {
         'Content-Type': 'application/json'
     },
-    timeout: 10000
+    timeout: 10000,
+    withCredentials: true,
+    // Permitir certificados auto-firmados en desarrollo
+    validateStatus: () => true
 });
 
 // Request interceptor to add the auth token header to requests
