@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import axios from '../../config/axios';
 import {
     FiHome, FiUsers, FiShield, FiGrid, FiLock,
-    FiChevronLeft, FiChevronRight
+    FiChevronLeft, FiChevronRight, FiChevronDown
 } from 'react-icons/fi';
 
 const Sidebar = () => {
@@ -13,6 +13,7 @@ const Sidebar = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [allowedModules, setAllowedModules] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [expandedMenus, setExpandedMenus] = useState({});
 
     // El módulo de seguridad (ID 1) incluye estas páginas
     const securityPages = [
@@ -21,6 +22,13 @@ const Sidebar = () => {
         { path: '/modulos', icon: FiGrid, label: 'Módulos' },
         { path: '/accesos', icon: FiLock, label: 'Accesos' },
     ];
+
+    const toggleMenu = (menuId) => {
+        setExpandedMenus(prev => ({
+            ...prev,
+            [menuId]: !prev[menuId]
+        }));
+    };
 
     useEffect(() => {
         const fetchAllowedModules = async () => {
@@ -49,19 +57,20 @@ const Sidebar = () => {
         ];
 
         allowedModules.forEach(modulo => {
-            // Si tiene acceso al módulo de seguridad (ID 1), agregar todas las páginas de seguridad
+            // Si tiene acceso al módulo de seguridad (ID 1), agregar menú desplegable
             if (modulo.idModulo === 1) {
-                items.push(...securityPages);
+                items.push({
+                    id: 'security',
+                    icon: FiShield,
+                    label: 'Seguridad',
+                    isDropdown: true,
+                    submenu: securityPages
+                });
             }
             // Otros módulos se agregarán aquí cuando se implementen
         });
 
-        // Eliminar duplicados basados en path
-        const uniqueItems = items.filter((item, index, self) =>
-            index === self.findIndex((t) => t.path === item.path)
-        );
-
-        return uniqueItems;
+        return items;
     };
 
     const menuItems = buildMenuItems();
@@ -109,6 +118,58 @@ const Sidebar = () => {
                     <ul className="space-y-1 px-2">
                         {menuItems.map((item) => {
                             const isActive = location.pathname === item.path;
+                            const isDropdownExpanded = expandedMenus[item.id];
+                            const isSubmenuActive = item.submenu?.some(sub => location.pathname === sub.path);
+
+                            if (item.isDropdown) {
+                                return (
+                                    <li key={item.id}>
+                                        <button
+                                            onClick={() => toggleMenu(item.id)}
+                                            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition duration-200 ${isSubmenuActive
+                                                ? 'bg-terracotta-500 text-white shadow-md'
+                                                : 'hover:bg-coffee-800 text-cream-200'
+                                                }`}
+                                            title={collapsed ? item.label : ''}
+                                        >
+                                            <item.icon size={20} />
+                                            {!collapsed && (
+                                                <>
+                                                    <span className="flex-1 text-left">{item.label}</span>
+                                                    <FiChevronDown
+                                                        size={18}
+                                                        className={`transition-transform duration-200 ${isDropdownExpanded ? 'rotate-180' : ''}`}
+                                                    />
+                                                </>
+                                            )}
+                                        </button>
+
+                                        {/* Submenu */}
+                                        {!collapsed && isDropdownExpanded && (
+                                            <ul className="space-y-1 mt-1 ml-2 pl-2 border-l-2 border-coffee-700">
+                                                {item.submenu.map((subitem) => {
+                                                    const isSubActive = location.pathname === subitem.path;
+                                                    return (
+                                                        <li key={subitem.path}>
+                                                            <Link
+                                                                to={subitem.path}
+                                                                className={`flex items-center gap-3 px-4 py-2 rounded-lg transition duration-200 text-sm ${isSubActive
+                                                                    ? 'bg-terracotta-400 text-white'
+                                                                    : 'hover:bg-coffee-800 text-cream-300'
+                                                                    }`}
+                                                            >
+                                                                <subitem.icon size={18} />
+                                                                <span>{subitem.label}</span>
+                                                            </Link>
+                                                        </li>
+                                                    );
+                                                })}
+                                            </ul>
+                                        )}
+                                    </li>
+                                );
+                            }
+
                             return (
                                 <li key={item.path}>
                                     <Link
