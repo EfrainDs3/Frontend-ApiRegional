@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { perfilesAPI } from '../services/api';
 import { FiUsers, FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import PerfilModal from '../components/perfiles/PerfilModal';
+import ValidationModal from '../components/common/ValidationModal';
 
 export default function PerfilesPage() {
     const [perfiles, setPerfiles] = useState([]);
@@ -10,6 +11,8 @@ export default function PerfilesPage() {
     const [selectedPerfil, setSelectedPerfil] = useState(null);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteMessage, setDeleteMessage] = useState('');
 
     useEffect(() => {
         fetchPerfiles();
@@ -38,14 +41,18 @@ export default function PerfilesPage() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('¿Estás seguro de eliminar este perfil?')) return;
-
         try {
             await perfilesAPI.delete(id);
-            fetchPerfiles();
+            setDeleteMessage('Perfil eliminado exitosamente');
+            setShowDeleteModal(true);
+            setTimeout(() => {
+                setShowDeleteModal(false);
+                fetchPerfiles();
+            }, 2000);
         } catch (error) {
             console.error('Error deleting perfil:', error);
-            alert('Error al eliminar el perfil');
+            setDeleteMessage('Error al eliminar el perfil');
+            setShowDeleteModal(true);
         }
     };
 
@@ -163,6 +170,14 @@ export default function PerfilesPage() {
                     successMessage={successMessage}
                 />
             )}
+
+            {/* Delete Validation Modal */}
+            <ValidationModal
+                show={showDeleteModal}
+                type={deleteMessage.includes('Error') ? 'error' : 'success'}
+                message={deleteMessage}
+                onClose={() => setShowDeleteModal(false)}
+            />
         </div>
     );
 }
