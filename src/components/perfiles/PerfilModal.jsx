@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { FiX, FiCheckCircle } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { perfilesAPI } from '../../services/api';
 
 export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal, successMessage }) {
     const [formData, setFormData] = useState({
@@ -8,6 +9,8 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
     useEffect(() => {
         if (perfil) {
@@ -21,6 +24,7 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setShowErrorModal(false);
 
         if (!formData.nombrePerfil.trim()) {
             setError('El nombre del perfil es requerido');
@@ -28,6 +32,20 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
         }
 
         try {
+            // Verificar si el perfil ya existe (solo para nuevos perfiles)
+            if (!perfil) {
+                const response = await perfilesAPI.getAll();
+                const perfilExistente = response.data.some(p => 
+                    p.nombrePerfil.toLowerCase() === formData.nombrePerfil.toLowerCase()
+                );
+                
+                if (perfilExistente) {
+                    setErrorMessage('Ya existe un perfil con ese nombre');
+                    setShowErrorModal(true);
+                    return;
+                }
+            }
+
             setLoading(true);
             await onSave(formData);
         } catch (err) {
@@ -39,6 +57,24 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
 
     return (
         <>
+            {/* Modal de Error */}
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[61] p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-red-400 bg-red-50">
+                            <FiXCircle size={32} className="text-red-400" />
+                        </div>
+                        <p className="text-gray-600 text-lg">"{errorMessage}"</p>
+                        <button
+                            onClick={() => setShowErrorModal(false)}
+                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Modal de Éxito */}
             {showSuccessModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[61] p-4">
@@ -58,7 +94,7 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
             )}
 
             {/* Modal Principal */}
-            {!showSuccessModal && (
+            {!showSuccessModal && !showErrorModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="flex items-center justify-between p-6 border-b">
