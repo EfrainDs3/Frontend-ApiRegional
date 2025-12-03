@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuariosAPI, perfilesAPI } from '../services/api';
-import { FiPlus, FiDownload, FiUpload } from 'react-icons/fi';
+import { FiPlus, FiDownload, FiUpload, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import UsuarioStats from '../components/usuarios/UsuarioStats';
 import UsuarioFilters from '../components/usuarios/UsuarioFilters';
@@ -12,6 +12,7 @@ const UsuariosPage = () => {
     const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [filters, setFilters] = useState({
         perfil: null,
         estado: null,
@@ -40,7 +41,10 @@ const UsuariosPage = () => {
         mutationFn: (id) => usuariosAPI.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries(['usuarios']);
-            toast.success('Usuario eliminado exitosamente');
+            setShowDeleteModal(true);
+            setTimeout(() => {
+                setShowDeleteModal(false);
+            }, 2000);
         },
         onError: () => {
             toast.error('Error al eliminar usuario');
@@ -83,6 +87,24 @@ const UsuariosPage = () => {
 
     return (
         <div>
+            {/* Modal de Éxito al Eliminar */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-green-300 bg-green-50">
+                            <FiCheckCircle size={32} className="text-green-500" />
+                        </div>
+                        <p className="text-gray-600 text-lg">"Usuario Eliminado con éxito"</p>
+                        <button
+                            onClick={() => setShowDeleteModal(false)}
+                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-coffee-800 font-serif">Gestión de Usuarios</h1>
