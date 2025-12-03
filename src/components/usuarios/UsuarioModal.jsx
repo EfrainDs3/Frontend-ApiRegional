@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuariosAPI, perfilesAPI } from '../../services/api';
-import { FiX, FiAlertCircle } from 'react-icons/fi';
+import { FiX, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const UsuarioModal = ({ usuario, onClose }) => {
@@ -19,6 +19,8 @@ const UsuarioModal = ({ usuario, onClose }) => {
     });
     const [validationError, setValidationError] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     // Fetch profiles for the dropdown
     const { data: perfiles } = useQuery({
@@ -57,8 +59,12 @@ const UsuarioModal = ({ usuario, onClose }) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['usuarios']);
-            toast.success(usuario ? 'Usuario actualizado' : 'Usuario creado');
-            onClose();
+            setSuccessMessage(usuario ? 'Usuario actualizado exitosamente' : 'Usuario guardado exitosamente');
+            setShowSuccessModal(true);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                onClose();
+            }, 2000);
         },
         onError: (error) => {
             toast.error('Error al guardar usuario');
@@ -109,6 +115,27 @@ const UsuarioModal = ({ usuario, onClose }) => {
 
     return (
         <>
+            {/* Modal de Éxito */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-green-300 bg-green-50">
+                            <FiCheckCircle size={32} className="text-green-500" />
+                        </div>
+                        <p className="text-gray-600 text-lg">{successMessage}</p>
+                        <button
+                            onClick={() => {
+                                setShowSuccessModal(false);
+                                onClose();
+                            }}
+                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Modal de Error */}
             {showErrorModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
