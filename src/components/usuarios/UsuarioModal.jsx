@@ -76,7 +76,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
         e.preventDefault();
         
         // Validación de contraseña
-        if (!usuario && formData.contrasena.length < 8) {
+        if (!usuario && (!formData.contrasena || formData.contrasena.length < 8)) {
             setValidationError('La contraseña debe tener al menos 8 caracteres');
             setShowErrorModal(true);
             return;
@@ -105,6 +105,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
                 }
             }).catch(err => {
                 console.error('Error verificando usuario:', err);
+                // En caso de error al verificar, intentar guardar igual
                 saveMutation.mutate(formData);
             });
         } else {
@@ -154,6 +155,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
             )}
 
             {/* Modal Principal */}
+            {!showErrorModal && !showSuccessModal && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                 <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -308,6 +310,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
                 </form>
             </div>
             </div>
+            )}
         </>
     );
 };
