@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuariosAPI, perfilesAPI } from '../../services/api';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiAlertCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const UsuarioModal = ({ usuario, onClose }) => {
@@ -17,6 +17,8 @@ const UsuarioModal = ({ usuario, onClose }) => {
         estado: 1,
         idSucursal: 1 // Default value
     });
+    const [validationError, setValidationError] = useState('');
+    const [showErrorModal, setShowErrorModal] = useState(false);
 
     // Fetch profiles for the dropdown
     const { data: perfiles } = useQuery({
@@ -66,12 +68,68 @@ const UsuarioModal = ({ usuario, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        saveMutation.mutate(formData);
+        
+        // Validación de contraseña
+        if (!usuario && formData.contrasena.length < 8) {
+            setValidationError('La contraseña debe tener al menos 8 caracteres');
+            setShowErrorModal(true);
+            return;
+        }
+
+        if (usuario && formData.contrasena && formData.contrasena.length < 8) {
+            setValidationError('La contraseña debe tener al menos 8 caracteres');
+            setShowErrorModal(true);
+            return;
+        }
+
+        // Validación de usuario duplicado (solo para nuevos usuarios)
+        if (!usuario && formData.nombreUsuarioLogin) {
+            // Verificar si el usuario ya existe
+            usuariosAPI.getAll().then(response => {
+                const usuarioExistente = response.data.some(u => 
+                    u.nombreUsuarioLogin.toLowerCase() === formData.nombreUsuarioLogin.toLowerCase()
+                );
+                
+                if (usuarioExistente) {
+                    setValidationError('El usuario ya existe');
+                    setShowErrorModal(true);
+                    return;
+                }
+                
+                // Si pasa todas las validaciones, guardar
+                saveMutation.mutate(formData);
+            }).catch(err => {
+                console.error('Error verificando usuario:', err);
+                saveMutation.mutate(formData);
+            });
+        } else {
+            saveMutation.mutate(formData);
+        }
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <>
+            {/* Modal de Error */}
+            {showErrorModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-red-400 bg-red-50">
+                            <FiAlertCircle size={32} className="text-red-400" />
+                        </div>
+                        <p className="text-gray-600 text-lg">{validationError}</p>
+                        <button
+                            onClick={() => setShowErrorModal(false)}
+                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Principal */}
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
                     <h2 className="text-2xl font-bold text-coffee-800 font-serif">
                         {usuario ? 'Editar Usuario' : 'Nuevo Usuario'}
@@ -156,8 +214,23 @@ const UsuarioModal = ({ usuario, onClose }) => {
                                 value={formData.contrasena}
                                 onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
                                 required={!usuario}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none transition ${
+                                    formData.contrasena && formData.contrasena.length < 8
+                                        ? 'border-red-400 bg-red-50'
+                                        : 'border-gray-300'
+                                }`}
                             />
+                            {formData.contrasena && (
+                                <p className={`text-sm mt-1 ${
+                                    formData.contrasena.length >= 8 
+                                        ? 'text-green-600' 
+                                        : 'text-red-500'
+                                }`}>
+                                    {formData.contrasena.length >= 8 
+                                        ? '✓ Contraseña válida' 
+                                        : `✗ Mínimo 8 caracteres (${formData.contrasena.length}/8)`}
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -208,7 +281,8 @@ const UsuarioModal = ({ usuario, onClose }) => {
                     </div>
                 </form>
             </div>
-        </div>
+            </div>
+        </>
     );
 };
 
