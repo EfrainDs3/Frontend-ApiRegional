@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { modulosAPI } from '../services/api';
 import { FiGrid, FiPlus, FiEdit2, FiTrash2, FiMove } from 'react-icons/fi';
 import ModuloModal from '../components/modulos/ModuloModal';
+import ValidationModal from '../components/common/ValidationModal';
 
 export default function ModulosPage() {
     const [modulos, setModulos] = useState([]);
@@ -9,6 +10,10 @@ export default function ModulosPage() {
     const [showModal, setShowModal] = useState(false);
     const [selectedModulo, setSelectedModulo] = useState(null);
     const [draggedIndex, setDraggedIndex] = useState(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteMessage, setDeleteMessage] = useState('');
 
     useEffect(() => {
         fetchModulos();
@@ -39,14 +44,18 @@ export default function ModulosPage() {
     };
 
     const handleDelete = async (id) => {
-        if (!confirm('¿Estás seguro de eliminar este módulo?')) return;
-
         try {
             await modulosAPI.delete(id);
-            fetchModulos();
+            setDeleteMessage('Módulo eliminado exitosamente');
+            setShowDeleteModal(true);
+            setTimeout(() => {
+                setShowDeleteModal(false);
+                fetchModulos();
+            }, 2000);
         } catch (error) {
             console.error('Error deleting modulo:', error);
-            alert('Error al eliminar el módulo');
+            setDeleteMessage('Error al eliminar el módulo');
+            setShowDeleteModal(true);
         }
     };
 
@@ -54,13 +63,19 @@ export default function ModulosPage() {
         try {
             if (selectedModulo) {
                 await modulosAPI.update(selectedModulo.idModulo, data);
+                setSuccessMessage('Módulo actualizado exitosamente');
             } else {
                 // Set orden to the next available number
                 const maxOrden = Math.max(...modulos.map(m => m.orden || 0), 0);
                 await modulosAPI.create({ ...data, orden: maxOrden + 1 });
+                setSuccessMessage('Módulo creado exitosamente');
             }
-            setShowModal(false);
-            fetchModulos();
+            setShowSuccessModal(true);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                setShowModal(false);
+                fetchModulos();
+            }, 2000);
         } catch (error) {
             console.error('Error saving modulo:', error);
             throw error;
@@ -200,10 +215,23 @@ export default function ModulosPage() {
             {showModal && (
                 <ModuloModal
                     modulo={selectedModulo}
-                    onClose={() => setShowModal(false)}
+                    onClose={() => {
+                        setShowModal(false);
+                        setSelectedModulo(null);
+                    }}
                     onSave={handleSave}
+                    showSuccessModal={showSuccessModal}
+                    successMessage={successMessage}
                 />
             )}
+
+            {/* Delete Validation Modal */}
+            <ValidationModal
+                show={showDeleteModal}
+                type={deleteMessage.includes('Error') ? 'error' : 'success'}
+                message={deleteMessage}
+                onClose={() => setShowDeleteModal(false)}
+            />
         </div>
     );
 }
