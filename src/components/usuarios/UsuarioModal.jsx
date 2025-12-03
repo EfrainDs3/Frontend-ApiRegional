@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuariosAPI, perfilesAPI } from '../../services/api';
-import { FiX, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const UsuarioModal = ({ usuario, onClose }) => {
@@ -99,11 +99,10 @@ const UsuarioModal = ({ usuario, onClose }) => {
                 if (usuarioExistente) {
                     setValidationError('El usuario ya existe');
                     setShowErrorModal(true);
-                    return;
+                } else {
+                    // Si pasa todas las validaciones, guardar
+                    saveMutation.mutate(formData);
                 }
-                
-                // Si pasa todas las validaciones, guardar
-                saveMutation.mutate(formData);
             }).catch(err => {
                 console.error('Error verificando usuario:', err);
                 saveMutation.mutate(formData);
@@ -141,7 +140,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
                         <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-red-400 bg-red-50">
-                            <FiAlertCircle size={32} className="text-red-400" />
+                            <FiXCircle size={32} className="text-red-400" />
                         </div>
                         <p className="text-gray-600 text-lg">{validationError}</p>
                         <button
