@@ -128,6 +128,7 @@ export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal,
                     </div>
                 </form>
             </div>
+            </div>
             )}
         </>
     );
