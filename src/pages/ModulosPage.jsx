@@ -3,6 +3,7 @@ import { modulosAPI } from '../services/api';
 import { FiGrid, FiPlus, FiEdit2, FiTrash2, FiMove } from 'react-icons/fi';
 import ModuloModal from '../components/modulos/ModuloModal';
 import ValidationModal from '../components/common/ValidationModal';
+import ConfirmModal from '../components/common/ConfirmModal';
 
 export default function ModulosPage() {
     const [modulos, setModulos] = useState([]);
@@ -14,6 +15,8 @@ export default function ModulosPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteMessage, setDeleteMessage] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [moduloToDelete, setModuloToDelete] = useState(null);
 
     useEffect(() => {
         fetchModulos();
@@ -43,9 +46,15 @@ export default function ModulosPage() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
+        setModuloToDelete(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        setShowConfirmModal(false);
         try {
-            await modulosAPI.delete(id);
+            await modulosAPI.delete(moduloToDelete);
             setDeleteMessage('Módulo eliminado exitosamente');
             setShowDeleteModal(true);
             setTimeout(() => {
@@ -57,6 +66,12 @@ export default function ModulosPage() {
             setDeleteMessage('Error al eliminar el módulo');
             setShowDeleteModal(true);
         }
+        setModuloToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setShowConfirmModal(false);
+        setModuloToDelete(null);
     };
 
     const handleSave = async (data) => {
@@ -231,6 +246,17 @@ export default function ModulosPage() {
                 type={deleteMessage.includes('Error') ? 'error' : 'success'}
                 message={deleteMessage}
                 onClose={() => setShowDeleteModal(false)}
+            />
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                show={showConfirmModal}
+                title="localhost:5173 dice"
+                message="¿Estás seguro de eliminar este módulo?"
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+                confirmText="Aceptar"
+                cancelText="Cancelar"
             />
         </div>
     );

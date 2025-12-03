@@ -3,6 +3,7 @@ import { perfilesAPI } from '../services/api';
 import { FiUsers, FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
 import PerfilModal from '../components/perfiles/PerfilModal';
 import ValidationModal from '../components/common/ValidationModal';
+import ConfirmModal from '../components/common/ConfirmModal';
 
 export default function PerfilesPage() {
     const [perfiles, setPerfiles] = useState([]);
@@ -13,6 +14,8 @@ export default function PerfilesPage() {
     const [successMessage, setSuccessMessage] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteMessage, setDeleteMessage] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [perfilToDelete, setPerfilToDelete] = useState(null);
 
     useEffect(() => {
         fetchPerfiles();
@@ -40,9 +43,15 @@ export default function PerfilesPage() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
+    const handleDelete = (id) => {
+        setPerfilToDelete(id);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        setShowConfirmModal(false);
         try {
-            await perfilesAPI.delete(id);
+            await perfilesAPI.delete(perfilToDelete);
             setDeleteMessage('Perfil eliminado exitosamente');
             setShowDeleteModal(true);
             setTimeout(() => {
@@ -54,6 +63,12 @@ export default function PerfilesPage() {
             setDeleteMessage('Error al eliminar el perfil');
             setShowDeleteModal(true);
         }
+        setPerfilToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setShowConfirmModal(false);
+        setPerfilToDelete(null);
     };
 
     const handleSave = async (data) => {
@@ -177,6 +192,17 @@ export default function PerfilesPage() {
                 type={deleteMessage.includes('Error') ? 'error' : 'success'}
                 message={deleteMessage}
                 onClose={() => setShowDeleteModal(false)}
+            />
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                show={showConfirmModal}
+                title="localhost:5173 dice"
+                message="¿Estás seguro de eliminar este perfil?"
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+                confirmText="Aceptar"
+                cancelText="Cancelar"
             />
         </div>
     );
