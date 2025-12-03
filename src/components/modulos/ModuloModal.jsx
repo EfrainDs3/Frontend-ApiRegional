@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import ValidationModal from '../common/ValidationModal';
+import { modulosAPI } from '../../services/api';
 
 export default function ModuloModal({ modulo, onClose, onSave, showSuccessModal, successMessage }) {
     const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ export default function ModuloModal({ modulo, onClose, onSave, showSuccessModal,
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setShowErrorModal(false);
 
         if (!formData.nombreModulo.trim()) {
             setError('El nombre del módulo es requerido');
@@ -31,6 +33,20 @@ export default function ModuloModal({ modulo, onClose, onSave, showSuccessModal,
         }
 
         try {
+            // Verificar si el módulo ya existe (solo para nuevos módulos)
+            if (!modulo) {
+                const response = await modulosAPI.getAll();
+                const moduloExistente = response.data.some(m =>
+                    m.nombreModulo.toLowerCase() === formData.nombreModulo.toLowerCase()
+                );
+
+                if (moduloExistente) {
+                    setErrorMessage('Ya existe un módulo con ese nombre');
+                    setShowErrorModal(true);
+                    return;
+                }
+            }
+
             setLoading(true);
             await onSave(formData);
         } catch (err) {
