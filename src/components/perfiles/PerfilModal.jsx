@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { FiX } from 'react-icons/fi';
+import { FiX, FiCheckCircle } from 'react-icons/fi';
 
-export default function PerfilModal({ perfil, onClose, onSave }) {
+export default function PerfilModal({ perfil, onClose, onSave, showSuccessModal, successMessage }) {
     const [formData, setFormData] = useState({
         nombrePerfil: '',
         estado: 1,
@@ -38,7 +38,28 @@ export default function PerfilModal({ perfil, onClose, onSave }) {
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <>
+            {/* Modal de Éxito */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[61] p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
+                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-green-300 bg-green-50">
+                            <FiCheckCircle size={32} className="text-green-500" />
+                        </div>
+                        <p className="text-gray-600 text-lg">"{successMessage}"</p>
+                        <button
+                            onClick={onClose}
+                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal Principal */}
+            {!showSuccessModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 <div className="flex items-center justify-between p-6 border-b">
                     <h2 className="text-xl font-bold text-coffee-900">
@@ -107,6 +128,7 @@ export default function PerfilModal({ perfil, onClose, onSave }) {
                     </div>
                 </form>
             </div>
-        </div>
+            )}
+        </>
     );
 }

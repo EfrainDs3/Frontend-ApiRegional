@@ -8,6 +8,8 @@ export default function PerfilesPage() {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [selectedPerfil, setSelectedPerfil] = useState(null);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
     useEffect(() => {
         fetchPerfiles();
@@ -51,11 +53,17 @@ export default function PerfilesPage() {
         try {
             if (selectedPerfil) {
                 await perfilesAPI.update(selectedPerfil.idPerfil, data);
+                setSuccessMessage('Perfil actualizado exitosamente');
             } else {
                 await perfilesAPI.create(data);
+                setSuccessMessage('Perfil creado exitosamente');
             }
-            setShowModal(false);
-            fetchPerfiles();
+            setShowSuccessModal(true);
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                setShowModal(false);
+                fetchPerfiles();
+            }, 2000);
         } catch (error) {
             console.error('Error saving perfil:', error);
             throw error;
@@ -146,8 +154,13 @@ export default function PerfilesPage() {
             {showModal && (
                 <PerfilModal
                     perfil={selectedPerfil}
-                    onClose={() => setShowModal(false)}
+                    onClose={() => {
+                        setShowModal(false);
+                        setSelectedPerfil(null);
+                    }}
                     onSave={handleSave}
+                    showSuccessModal={showSuccessModal}
+                    successMessage={successMessage}
                 />
             )}
         </div>
