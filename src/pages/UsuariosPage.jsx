@@ -1,18 +1,23 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usuariosAPI, perfilesAPI } from '../services/api';
-import { FiPlus, FiDownload, FiUpload, FiCheckCircle } from 'react-icons/fi';
+import { FiPlus, FiDownload, FiUpload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import UsuarioStats from '../components/usuarios/UsuarioStats';
 import UsuarioFilters from '../components/usuarios/UsuarioFilters';
 import UsuariosTable from '../components/usuarios/UsuariosTable';
 import UsuarioModal from '../components/usuarios/UsuarioModal';
+import ValidationModal from '../components/common/ValidationModal';
+import ConfirmModal from '../components/common/ConfirmModal';
 
 const UsuariosPage = () => {
     const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteMessage, setDeleteMessage] = useState('');
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [usuarioToDelete, setUsuarioToDelete] = useState(null);
     const [filters, setFilters] = useState({
         perfil: null,
         estado: null,
@@ -41,10 +46,6 @@ const UsuariosPage = () => {
         mutationFn: (id) => usuariosAPI.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries(['usuarios']);
-            setShowDeleteModal(true);
-            setTimeout(() => {
-                setShowDeleteModal(false);
-            }, 2000);
         },
         onError: () => {
             toast.error('Error al eliminar usuario');
@@ -62,9 +63,30 @@ const UsuariosPage = () => {
     };
 
     const handleDelete = (usuario) => {
-        if (window.confirm(`¿Desea eliminar al usuario ${usuario.nombreUsuario}?`)) {
-            deleteMutation.mutate(usuario.idUsuario);
+        setUsuarioToDelete(usuario);
+        setShowConfirmModal(true);
+    };
+
+    const confirmDelete = async () => {
+        setShowConfirmModal(false);
+        try {
+            await deleteMutation.mutateAsync(usuarioToDelete.idUsuario);
+            setDeleteMessage('✓ Usuario eliminado correctamente');
+            setShowDeleteModal(true);
+            setTimeout(() => {
+                setShowDeleteModal(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Error deleting usuario:', error);
+            setDeleteMessage('Error al eliminar el usuario');
+            setShowDeleteModal(true);
         }
+        setUsuarioToDelete(null);
+    };
+
+    const cancelDelete = () => {
+        setShowConfirmModal(false);
+        setUsuarioToDelete(null);
     };
 
     // Filter logic - Solo mostrar usuarios activos por defecto
@@ -87,23 +109,6 @@ const UsuariosPage = () => {
 
     return (
         <div>
-            {/* Modal de Éxito al Eliminar */}
-            {showDeleteModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 flex flex-col items-center text-center space-y-4">
-                        <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-green-300 bg-green-50">
-                            <FiCheckCircle size={32} className="text-green-500" />
-                        </div>
-                        <p className="text-gray-600 text-lg">✓ Usuario eliminado correctamente</p>
-                        <button
-                            onClick={() => setShowDeleteModal(false)}
-                            className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"
-                        >
-                            OK
-                        </button>
-                    </div>
-                </div>
-            )}
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
@@ -145,6 +150,25 @@ const UsuariosPage = () => {
                     onClose={() => setShowModal(false)}
                 />
             )}
+
+            {/* Delete Validation Modal */}
+            <ValidationModal
+                show={showDeleteModal}
+                type={deleteMessage.includes('Error') ? 'error' : 'success'}
+                message={deleteMessage}
+                onClose={() => setShowDeleteModal(false)}
+            />
+
+            {/* Confirm Delete Modal */}
+            <ConfirmModal
+                show={showConfirmModal}
+                title="Confirmar eliminación"
+                message={usuarioToDelete ? `¿Desea eliminar al usuario ${usuarioToDelete.nombreUsuario}?` : ''}
+                onConfirm={confirmDelete}
+                onCancel={cancelDelete}
+                confirmText="Aceptar"
+                cancelText="Cancelar"
+            />
         </div>
     );
 };
