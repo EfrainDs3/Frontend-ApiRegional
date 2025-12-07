@@ -18,8 +18,8 @@ export default function ValidationModal({ show, type = 'success', message, onClo
                 {/* Icon Circle */}
                 <div
                     className={`flex items-center justify-center w-16 h-16 rounded-full border-4 ${isSuccess
-                            ? 'border-green-300 bg-green-50'
-                            : 'border-red-400 bg-red-50'
+                        ? 'border-green-300 bg-green-50'
+                        : 'border-red-400 bg-red-50'
                         }`}
                 >
                     {isSuccess ? (
@@ -30,7 +30,7 @@ export default function ValidationModal({ show, type = 'success', message, onClo
                 </div>
 
                 {/* Message */}
-                <p className="text-gray-600 text-lg">"{message}"</p>
+                <p className="text-gray-600 text-lg">{message}</p>
 
                 {/* OK Button */}
                 <button
