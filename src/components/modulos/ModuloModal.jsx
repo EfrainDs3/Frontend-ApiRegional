@@ -33,18 +33,20 @@ export default function ModuloModal({ modulo, onClose, onSave, showSuccessModal,
         }
 
         try {
-            // Verificar si el módulo ya existe (solo para nuevos módulos)
-            if (!modulo) {
-                const response = await modulosAPI.getAll();
-                const moduloExistente = response.data.some(m =>
-                    m.nombreModulo.toLowerCase() === formData.nombreModulo.toLowerCase()
-                );
-
-                if (moduloExistente) {
-                    setErrorMessage('Ya existe un módulo con ese nombre');
-                    setShowErrorModal(true);
-                    return;
+            // Verificar si el módulo ya existe
+            const response = await modulosAPI.getAll();
+            const moduloExistente = response.data.some(m => {
+                // Si estamos editando, excluir el módulo actual de la comparación
+                if (modulo && m.idModulo === modulo.idModulo) {
+                    return false;
                 }
+                return m.nombreModulo.toLowerCase() === formData.nombreModulo.toLowerCase();
+            });
+
+            if (moduloExistente) {
+                setErrorMessage('Este nombre ya está en uso');
+                setShowErrorModal(true);
+                return;
             }
 
             setLoading(true);

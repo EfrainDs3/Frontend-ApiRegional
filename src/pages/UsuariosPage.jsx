@@ -62,7 +62,7 @@ const UsuariosPage = () => {
     };
 
     const handleDelete = (usuario) => {
-        if (window.confirm(`¿Está seguro de eliminar al usuario ${usuario.nombreUsuario}?`)) {
+        if (window.confirm(`¿Desea eliminar al usuario ${usuario.nombreUsuario}?`)) {
             deleteMutation.mutate(usuario.idUsuario);
         }
     };
@@ -94,7 +94,7 @@ const UsuariosPage = () => {
                         <div className="flex items-center justify-center w-16 h-16 rounded-full border-4 border-green-300 bg-green-50">
                             <FiCheckCircle size={32} className="text-green-500" />
                         </div>
-                        <p className="text-gray-600 text-lg">"Usuario Eliminado con éxito"</p>
+                        <p className="text-gray-600 text-lg">✓ Usuario eliminado correctamente</p>
                         <button
                             onClick={() => setShowDeleteModal(false)}
                             className="px-6 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition font-medium"

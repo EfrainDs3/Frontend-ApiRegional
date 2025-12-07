@@ -52,7 +52,7 @@ export default function PerfilesPage() {
         setShowConfirmModal(false);
         try {
             await perfilesAPI.delete(perfilToDelete);
-            setDeleteMessage('Perfil eliminado exitosamente');
+            setDeleteMessage('✓ Perfil eliminado correctamente');
             setShowDeleteModal(true);
             setTimeout(() => {
                 setShowDeleteModal(false);
@@ -75,10 +75,10 @@ export default function PerfilesPage() {
         try {
             if (selectedPerfil) {
                 await perfilesAPI.update(selectedPerfil.idPerfil, data);
-                setSuccessMessage('Perfil actualizado exitosamente');
+                setSuccessMessage('✓ Perfil editado correctamente');
             } else {
                 await perfilesAPI.create(data);
-                setSuccessMessage('Perfil creado exitosamente');
+                setSuccessMessage('✓ Perfil creado correctamente');
             }
             setShowSuccessModal(true);
             setTimeout(() => {
@@ -197,8 +197,8 @@ export default function PerfilesPage() {
             {/* Confirm Delete Modal */}
             <ConfirmModal
                 show={showConfirmModal}
-                title="localhost:5173 dice"
-                message="¿Estás seguro de eliminar este perfil?"
+                title="Confirmar eliminación"
+                message="¿Desea eliminar este perfil?"
                 onConfirm={confirmDelete}
                 onCancel={cancelDelete}
                 confirmText="Aceptar"

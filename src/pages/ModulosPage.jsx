@@ -55,7 +55,7 @@ export default function ModulosPage() {
         setShowConfirmModal(false);
         try {
             await modulosAPI.delete(moduloToDelete);
-            setDeleteMessage('Módulo eliminado exitosamente');
+            setDeleteMessage('✓ Módulo eliminado correctamente');
             setShowDeleteModal(true);
             setTimeout(() => {
                 setShowDeleteModal(false);
@@ -78,12 +78,12 @@ export default function ModulosPage() {
         try {
             if (selectedModulo) {
                 await modulosAPI.update(selectedModulo.idModulo, data);
-                setSuccessMessage('Módulo actualizado exitosamente');
+                setSuccessMessage('✓ Módulo editado correctamente');
             } else {
                 // Set orden to the next available number
                 const maxOrden = Math.max(...modulos.map(m => m.orden || 0), 0);
                 await modulosAPI.create({ ...data, orden: maxOrden + 1 });
-                setSuccessMessage('Módulo creado exitosamente');
+                setSuccessMessage('✓ Módulo creado correctamente');
             }
             setShowSuccessModal(true);
             setTimeout(() => {
@@ -251,8 +251,8 @@ export default function ModulosPage() {
             {/* Confirm Delete Modal */}
             <ConfirmModal
                 show={showConfirmModal}
-                title="localhost:5173 dice"
-                message="¿Estás seguro de eliminar este módulo?"
+                title="Confirmar eliminación"
+                message="¿Desea eliminar este módulo?"
                 onConfirm={confirmDelete}
                 onCancel={cancelDelete}
                 confirmText="Aceptar"

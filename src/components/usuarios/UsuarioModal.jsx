@@ -59,7 +59,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['usuarios']);
-            setSuccessMessage(usuario ? 'Usuario actualizado exitosamente' : 'Usuario guardado exitosamente');
+            setSuccessMessage(usuario ? '✓ Usuario editado correctamente' : '✓ Usuario creado correctamente');
             setShowSuccessModal(true);
             setTimeout(() => {
                 setShowSuccessModal(false);
@@ -74,7 +74,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Validación de contraseña
         if (!usuario && (!formData.contrasena || formData.contrasena.length < 8)) {
             setValidationError('La contraseña debe tener al menos 8 caracteres');
@@ -92,12 +92,12 @@ const UsuarioModal = ({ usuario, onClose }) => {
         if (!usuario && formData.nombreUsuarioLogin) {
             // Verificar si el usuario ya existe
             usuariosAPI.getAll().then(response => {
-                const usuarioExistente = response.data.some(u => 
+                const usuarioExistente = response.data.some(u =>
                     u.nombreUsuarioLogin.toLowerCase() === formData.nombreUsuarioLogin.toLowerCase()
                 );
-                
+
                 if (usuarioExistente) {
-                    setValidationError('El usuario ya existe');
+                    setValidationError('Este nombre ya está en uso');
                     setShowErrorModal(true);
                 } else {
                     // Si pasa todas las validaciones, guardar
@@ -156,160 +156,158 @@ const UsuarioModal = ({ usuario, onClose }) => {
 
             {/* Modal Principal */}
             {!showErrorModal && !showSuccessModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-2xl font-bold text-coffee-800 font-serif">
-                        {usuario ? 'Editar Usuario' : 'Nuevo Usuario'}
-                    </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
-                        <FiX size={24} />
-                    </button>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <h2 className="text-2xl font-bold text-coffee-800 font-serif">
+                                {usuario ? 'Editar Usuario' : 'Nuevo Usuario'}
+                            </h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
+                                <FiX size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Personal Info */}
+                                <div className="md:col-span-2">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Información Personal</h3>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Nombres</label>
+                                    <input
+                                        type="text"
+                                        value={formData.nombreUsuario}
+                                        onChange={(e) => setFormData({ ...formData, nombreUsuario: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Apellidos</label>
+                                    <input
+                                        type="text"
+                                        value={formData.apellidos}
+                                        onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">DNI</label>
+                                    <input
+                                        type="text"
+                                        value={formData.dniUsuario}
+                                        onChange={(e) => setFormData({ ...formData, dniUsuario: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                    <input
+                                        type="text"
+                                        value={formData.telefono}
+                                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    />
+                                </div>
+
+                                {/* Account Info */}
+                                <div className="md:col-span-2 mt-4">
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Cuenta de Usuario</h3>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Usuario Login</label>
+                                    <input
+                                        type="text"
+                                        value={formData.nombreUsuarioLogin}
+                                        onChange={(e) => setFormData({ ...formData, nombreUsuarioLogin: e.target.value })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        {usuario ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={formData.contrasena}
+                                        onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
+                                        required={!usuario}
+                                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none transition ${formData.contrasena && formData.contrasena.length < 8
+                                                ? 'border-red-400 bg-red-50'
+                                                : 'border-gray-300'
+                                            }`}
+                                    />
+                                    {formData.contrasena && (
+                                        <p className={`text-sm mt-1 ${formData.contrasena.length >= 8
+                                                ? 'text-green-600'
+                                                : 'text-red-500'
+                                            }`}>
+                                            {formData.contrasena.length >= 8
+                                                ? '✓ Contraseña válida'
+                                                : `✗ Mínimo 8 caracteres (${formData.contrasena.length}/8)`}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Perfil</label>
+                                    <select
+                                        value={formData.rolId}
+                                        onChange={(e) => setFormData({ ...formData, rolId: parseInt(e.target.value) })}
+                                        required
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    >
+                                        <option value="">Seleccione un perfil</option>
+                                        {perfiles?.map(perfil => (
+                                            <option key={perfil.idPerfil} value={perfil.idPerfil}>
+                                                {perfil.nombrePerfil}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                                    <select
+                                        value={formData.estado}
+                                        onChange={(e) => setFormData({ ...formData, estado: parseInt(e.target.value) })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
+                                    >
+                                        <option value={1}>Activo</option>
+                                        <option value={0}>Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={saveMutation.isPending}
+                                    className="px-4 py-2 bg-terracotta-500 text-white rounded-lg hover:bg-terracotta-600 transition shadow-md disabled:opacity-50"
+                                >
+                                    {saveMutation.isPending ? 'Guardando...' : (usuario ? 'Actualizar' : 'Crear Usuario')}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-
-                <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Personal Info */}
-                        <div className="md:col-span-2">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Información Personal</h3>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Nombres</label>
-                            <input
-                                type="text"
-                                value={formData.nombreUsuario}
-                                onChange={(e) => setFormData({ ...formData, nombreUsuario: e.target.value })}
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Apellidos</label>
-                            <input
-                                type="text"
-                                value={formData.apellidos}
-                                onChange={(e) => setFormData({ ...formData, apellidos: e.target.value })}
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">DNI</label>
-                            <input
-                                type="text"
-                                value={formData.dniUsuario}
-                                onChange={(e) => setFormData({ ...formData, dniUsuario: e.target.value })}
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
-                            <input
-                                type="text"
-                                value={formData.telefono}
-                                onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            />
-                        </div>
-
-                        {/* Account Info */}
-                        <div className="md:col-span-2 mt-4">
-                            <h3 className="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Cuenta de Usuario</h3>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Usuario Login</label>
-                            <input
-                                type="text"
-                                value={formData.nombreUsuarioLogin}
-                                onChange={(e) => setFormData({ ...formData, nombreUsuarioLogin: e.target.value })}
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                {usuario ? 'Nueva Contraseña (Opcional)' : 'Contraseña'}
-                            </label>
-                            <input
-                                type="password"
-                                value={formData.contrasena}
-                                onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
-                                required={!usuario}
-                                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none transition ${
-                                    formData.contrasena && formData.contrasena.length < 8
-                                        ? 'border-red-400 bg-red-50'
-                                        : 'border-gray-300'
-                                }`}
-                            />
-                            {formData.contrasena && (
-                                <p className={`text-sm mt-1 ${
-                                    formData.contrasena.length >= 8 
-                                        ? 'text-green-600' 
-                                        : 'text-red-500'
-                                }`}>
-                                    {formData.contrasena.length >= 8 
-                                        ? '✓ Contraseña válida' 
-                                        : `✗ Mínimo 8 caracteres (${formData.contrasena.length}/8)`}
-                                </p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Perfil</label>
-                            <select
-                                value={formData.rolId}
-                                onChange={(e) => setFormData({ ...formData, rolId: parseInt(e.target.value) })}
-                                required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            >
-                                <option value="">Seleccione un perfil</option>
-                                {perfiles?.map(perfil => (
-                                    <option key={perfil.idPerfil} value={perfil.idPerfil}>
-                                        {perfil.nombrePerfil}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                            <select
-                                value={formData.estado}
-                                onChange={(e) => setFormData({ ...formData, estado: parseInt(e.target.value) })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
-                            >
-                                <option value={1}>Activo</option>
-                                <option value={0}>Inactivo</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={saveMutation.isPending}
-                            className="px-4 py-2 bg-terracotta-500 text-white rounded-lg hover:bg-terracotta-600 transition shadow-md disabled:opacity-50"
-                        >
-                            {saveMutation.isPending ? 'Guardando...' : (usuario ? 'Actualizar' : 'Crear Usuario')}
-                        </button>
-                    </div>
-                </form>
-            </div>
-            </div>
             )}
         </>
     );
