@@ -143,15 +143,6 @@ const UsuariosPage = () => {
 
     return (
         <div>
-            {/* Mostrar alerta si es administrador local */}
-            {currentUser?.idSucursal && currentUser.idSucursal > 0 && (
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6">
-                    <p className="text-blue-800">
-                        <strong>📍 Vista de Sucursal:</strong> Solo estás viendo usuarios asignados a tu sucursal <strong>{sucursalInfo?.nombre || `Sucursal #${currentUser.idSucursal}`}</strong>
-                    </p>
-                </div>
-            )}
-
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-coffee-800 font-serif">Gestión de Usuarios</h1>
