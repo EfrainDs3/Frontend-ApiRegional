@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { usuariosAPI, perfilesAPI } from '../services/api';
+import axios from '../config/axios';
 import { FiPlus, FiDownload, FiUpload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import UsuarioStats from '../components/usuarios/UsuarioStats';
@@ -21,11 +22,27 @@ const UsuariosPage = () => {
     const [deleteMessage, setDeleteMessage] = useState('');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [usuarioToDelete, setUsuarioToDelete] = useState(null);
+    const [sucursalInfo, setSucursalInfo] = useState(null);
     const [filters, setFilters] = useState({
         perfil: null,
         estado: null,
         sucursal: null
     });
+
+    // Cargar información de la sucursal si el usuario es administrador local
+    useEffect(() => {
+        if (currentUser?.idSucursal && currentUser.idSucursal > 0) {
+            const fetchSucursalInfo = async () => {
+                try {
+                    const response = await axios.get(`/restful/sucursales/${currentUser.idSucursal}`);
+                    setSucursalInfo(response.data);
+                } catch (err) {
+                    console.log('No se pudo cargar info de sucursal');
+                }
+            };
+            fetchSucursalInfo();
+        }
+    }, [currentUser]);
 
     // Fetch users and profiles
     const { data: usuariosData, isLoading } = useQuery({
@@ -130,7 +147,7 @@ const UsuariosPage = () => {
             {currentUser?.idSucursal && currentUser.idSucursal > 0 && (
                 <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6">
                     <p className="text-blue-800">
-                        <strong>📍 Vista de Sucursal:</strong> Solo estás viendo usuarios asignados a tu sucursal (ID: {currentUser.idSucursal})
+                        <strong>📍 Vista de Sucursal:</strong> Solo estás viendo usuarios asignados a tu sucursal <strong>{sucursalInfo?.nombre || `Sucursal #${currentUser.idSucursal}`}</strong>
                     </p>
                 </div>
             )}

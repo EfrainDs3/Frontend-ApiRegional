@@ -29,7 +29,7 @@ const DashboardPage = () => {
                     
                     // Cargar info de la sucursal
                     try {
-                        const sucursalResponse = await axios.get(`/sucursales/${user.idSucursal}`);
+                        const sucursalResponse = await axios.get(`/restful/sucursales/${user.idSucursal}`);
                         setSucursalInfo(sucursalResponse.data);
                     } catch (err) {
                         console.log('No se pudo cargar info de sucursal');
