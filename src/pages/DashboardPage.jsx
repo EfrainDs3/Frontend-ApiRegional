@@ -5,28 +5,45 @@ import axios from '../config/axios';
 const DashboardPage = () => {
     const { user } = useAuth();
     const [accesos, setAccesos] = useState([]);
+    const [usuariosSucursal, setUsuariosSucursal] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [sucursalInfo, setSucursalInfo] = useState(null);
 
     useEffect(() => {
-        const fetchAccesos = async () => {
+        const fetchData = async () => {
             if (!user || !user.idPerfil) {
                 setLoading(false);
                 return;
             }
 
             try {
-                const response = await axios.get(`/accesos/perfil/${user.idPerfil}/completo`);
-                setAccesos(response.data);
+                // Cargar accesos del perfil
+                const accesoResponse = await axios.get(`/accesos/perfil/${user.idPerfil}/completo`);
+                setAccesos(accesoResponse.data);
+
+                // Si el usuario es administrador y tiene sucursal asignada, cargar usuarios de esa sucursal
+                if (user.idSucursal && user.idSucursal > 0) {
+                    const usuariosResponse = await axios.get(`/restful/usuarios/sucursal/${user.idSucursal}`);
+                    setUsuariosSucursal(usuariosResponse.data);
+                    
+                    // Cargar info de la sucursal
+                    try {
+                        const sucursalResponse = await axios.get(`/sucursales/${user.idSucursal}`);
+                        setSucursalInfo(sucursalResponse.data);
+                    } catch (err) {
+                        console.log('No se pudo cargar info de sucursal');
+                    }
+                }
             } catch (err) {
-                console.error('Error al cargar accesos:', err);
-                setError('No se pudieron cargar los módulos disponibles');
+                console.error('Error al cargar datos:', err);
+                setError('No se pudieron cargar los datos');
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchAccesos();
+        fetchData();
     }, [user]);
 
     if (loading) {
@@ -95,6 +112,18 @@ const DashboardPage = () => {
         <div>
             <h1 className="text-3xl font-bold text-coffee-800 font-serif mb-6">Dashboard</h1>
 
+            {/* Info de sucursal si es administrador local */}
+            {user.idSucursal && user.idSucursal > 0 && (
+                <div className="bg-gradient-to-r from-terracotta-500 to-terracotta-600 text-white p-6 rounded-lg shadow-md mb-6">
+                    <h2 className="text-2xl font-bold mb-2">
+                        🏢 {sucursalInfo?.nombre || `Sucursal #${user.idSucursal}`}
+                    </h2>
+                    {sucursalInfo?.direccion && (
+                        <p className="text-terracotta-100">📍 {sucursalInfo.direccion}</p>
+                    )}
+                </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-terracotta-500">
                     <h3 className="text-lg font-semibold text-gray-700">Bienvenido</h3>
@@ -112,12 +141,22 @@ const DashboardPage = () => {
                     <p className="text-sm text-gray-500 mt-1">módulos asignados</p>
                 </div>
 
-                <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
-                    <h3 className="text-lg font-semibold text-gray-700">Acceso Rápido</h3>
-                    <p className="text-gray-500 mt-2 text-sm">
-                        Selecciona una opción del menú lateral para comenzar.
-                    </p>
-                </div>
+                {user.idSucursal && user.idSucursal > 0 && (
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+                        <h3 className="text-lg font-semibold text-gray-700">Usuarios de Sucursal</h3>
+                        <p className="text-3xl font-bold text-purple-600 mt-2">{usuariosSucursal.length}</p>
+                        <p className="text-sm text-gray-500 mt-1">usuarios en tu sucursal</p>
+                    </div>
+                )}
+
+                {!user.idSucursal && (
+                    <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                        <h3 className="text-lg font-semibold text-gray-700">Acceso Rápido</h3>
+                        <p className="text-gray-500 mt-2 text-sm">
+                            Selecciona una opción del menú lateral para comenzar.
+                        </p>
+                    </div>
+                )}
             </div>
 
             {/* Lista de módulos disponibles */}
@@ -140,6 +179,39 @@ const DashboardPage = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Lista de usuarios de la sucursal si es administrador local */}
+            {user.idSucursal && user.idSucursal > 0 && usuariosSucursal.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+                    <h2 className="text-xl font-semibold text-gray-800 mb-4">Usuarios de tu Sucursal</h2>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                            <thead className="bg-gray-100">
+                                <tr>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Nombre</th>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Usuario</th>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Perfil</th>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-700">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {usuariosSucursal.map((u) => (
+                                    <tr key={u.idUsuario} className="border-b hover:bg-gray-50">
+                                        <td className="px-4 py-3 text-gray-800">{u.nombreUsuario} {u.apellidos}</td>
+                                        <td className="px-4 py-3 text-gray-600">{u.nombreUsuarioLogin}</td>
+                                        <td className="px-4 py-3 text-gray-600">ID: {u.rolId}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-semibold ${u.estado === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                {u.estado === 1 ? '✓ Activo' : 'Inactivo'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

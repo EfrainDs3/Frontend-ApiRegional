@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../context/AuthContext';
 import { usuariosAPI, perfilesAPI } from '../services/api';
 import { FiPlus, FiDownload, FiUpload } from 'react-icons/fi';
 import toast from 'react-hot-toast';
@@ -12,6 +13,7 @@ import ConfirmModal from '../components/common/ConfirmModal';
 
 const UsuariosPage = () => {
     const queryClient = useQueryClient();
+    const { user: currentUser } = useAuth();
     const [showModal, setShowModal] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState(null);
     const [isAdminMode, setIsAdminMode] = useState(false);
@@ -103,6 +105,12 @@ const UsuariosPage = () => {
         // Filtrar solo usuarios activos (estado = 1) - oculta los eliminados lógicamente
         if (usuario.estado !== 1) return false;
 
+        // Si el usuario actual es administrador local (tiene sucursal asignada),
+        // solo mostrar usuarios de su sucursal
+        if (currentUser?.idSucursal && currentUser.idSucursal > 0) {
+            if (usuario.idSucursal !== currentUser.idSucursal) return false;
+        }
+
         if (filters.perfil && usuario.rolId !== filters.perfil) return false;
         if (filters.estado !== null && usuario.estado !== filters.estado) return false;
         return true;
@@ -118,6 +126,14 @@ const UsuariosPage = () => {
 
     return (
         <div>
+            {/* Mostrar alerta si es administrador local */}
+            {currentUser?.idSucursal && currentUser.idSucursal > 0 && (
+                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg mb-6">
+                    <p className="text-blue-800">
+                        <strong>📍 Vista de Sucursal:</strong> Solo estás viendo usuarios asignados a tu sucursal (ID: {currentUser.idSucursal})
+                    </p>
+                </div>
+            )}
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
