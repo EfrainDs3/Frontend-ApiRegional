@@ -12,6 +12,8 @@ export const usuariosAPI = {
     create: (data) => api.post('/restful/usuarios', data),
     update: (id, data) => api.put(`/restful/usuarios/${id}`, data),
     delete: (id) => api.delete(`/restful/usuarios/${id}`),
+    // ✅ Nuevo endpoint para crear administradores con todos los accesos
+    crearAdministrador: (data) => api.post('/restful/superadmin/crear-administrador', data),
 };
 
 export const perfilesAPI = {

@@ -14,6 +14,7 @@ const UsuariosPage = () => {
     const queryClient = useQueryClient();
     const [showModal, setShowModal] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState(null);
+    const [isAdminMode, setIsAdminMode] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deleteMessage, setDeleteMessage] = useState('');
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -54,11 +55,19 @@ const UsuariosPage = () => {
 
     const handleCreate = () => {
         setSelectedUsuario(null);
+        setIsAdminMode(false);
+        setShowModal(true);
+    };
+
+    const handleCreateAdmin = () => {
+        setSelectedUsuario(null);
+        setIsAdminMode(true);
         setShowModal(true);
     };
 
     const handleEdit = (usuario) => {
         setSelectedUsuario(usuario);
+        setIsAdminMode(false);
         setShowModal(true);
     };
 
@@ -115,7 +124,7 @@ const UsuariosPage = () => {
                     <h1 className="text-3xl font-bold text-coffee-800 font-serif">Gestión de Usuarios</h1>
                     <p className="text-gray-600 mt-1">Administra el acceso y roles del personal</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex gap-3 flex-wrap">
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition">
                         <FiUpload size={18} />
                         <span className="hidden sm:inline">Importar</span>
@@ -123,6 +132,14 @@ const UsuariosPage = () => {
                     <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition">
                         <FiDownload size={18} />
                         <span className="hidden sm:inline">Exportar</span>
+                    </button>
+                    {/* ✅ Nuevo botón para crear administrador */}
+                    <button
+                        onClick={handleCreateAdmin}
+                        className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition shadow-md"
+                    >
+                        <FiPlus size={20} />
+                        <span className="hidden sm:inline">Nuevo Admin</span>
                     </button>
                     <button
                         onClick={handleCreate}
@@ -148,6 +165,7 @@ const UsuariosPage = () => {
                 <UsuarioModal
                     usuario={selectedUsuario}
                     onClose={() => setShowModal(false)}
+                    isAdmin={isAdminMode}
                 />
             )}
 

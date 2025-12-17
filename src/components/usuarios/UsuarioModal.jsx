@@ -4,7 +4,7 @@ import { usuariosAPI, perfilesAPI } from '../../services/api';
 import { FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
-const UsuarioModal = ({ usuario, onClose }) => {
+const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
     const queryClient = useQueryClient();
     const [formData, setFormData] = useState({
         nombreUsuario: '',
@@ -55,11 +55,15 @@ const UsuarioModal = ({ usuario, onClose }) => {
                 if (!dataToSend.contrasena) delete dataToSend.contrasena;
                 return usuariosAPI.update(usuario.idUsuario, dataToSend);
             }
+            // ✅ Si es un administrador nuevo, usar el endpoint especial
+            if (!usuario && isAdmin) {
+                return usuariosAPI.crearAdministrador(data);
+            }
             return usuariosAPI.create(data);
         },
         onSuccess: () => {
             queryClient.invalidateQueries(['usuarios']);
-            setSuccessMessage(usuario ? '✓ Usuario editado correctamente' : '✓ Usuario creado correctamente');
+            setSuccessMessage(usuario ? '✓ Usuario editado correctamente' : '✓ Administrador creado correctamente con todos los accesos');
             setShowSuccessModal(true);
             setTimeout(() => {
                 setShowSuccessModal(false);
@@ -160,7 +164,7 @@ const UsuarioModal = ({ usuario, onClose }) => {
                     <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between p-6 border-b border-gray-200">
                             <h2 className="text-2xl font-bold text-coffee-800 font-serif">
-                                {usuario ? 'Editar Usuario' : 'Nuevo Usuario'}
+                                {usuario ? 'Editar Usuario' : isAdmin ? 'Nuevo Administrador (Con Todos los Accesos)' : 'Nuevo Usuario'}
                             </h2>
                             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition">
                                 <FiX size={24} />
