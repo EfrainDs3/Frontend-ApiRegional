@@ -3,7 +3,7 @@ import axios from 'axios';
 // Use environment variable or default to the provided API URL
 // IMPORTANTE: Cambiar a HTTP por problema de certificado SSL
 //const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://localhost:8080';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://comidas.spring.informaticapp.com:2202';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://comidas.spring.informaticapp.com:2192';
 
 
 
