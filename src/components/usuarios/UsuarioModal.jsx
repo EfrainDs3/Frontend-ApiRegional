@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../../context/AuthContext';
 import { usuariosAPI, perfilesAPI } from '../../services/api';
 import { FiX, FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 
 const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
     const queryClient = useQueryClient();
+    const { user: currentUser } = useAuth();
     const [formData, setFormData] = useState({
         nombreUsuario: '',
         apellidos: '',
@@ -15,7 +17,7 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
         contrasena: '',
         rolId: '',
         estado: 1,
-        idSucursal: 1 // Default value
+        idSucursal: currentUser?.idSucursal || 1 // Usar sucursal del administrador actual
     });
     const [validationError, setValidationError] = useState('');
     const [showErrorModal, setShowErrorModal] = useState(false);
@@ -44,8 +46,14 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
                 estado: usuario.estado || 1,
                 idSucursal: usuario.idSucursal || 1
             });
+        } else {
+            // Para nuevos usuarios, usar la sucursal del administrador actual
+            setFormData(prev => ({
+                ...prev,
+                idSucursal: currentUser?.idSucursal || 1
+            }));
         }
-    }, [usuario]);
+    }, [usuario, currentUser]);
 
     const saveMutation = useMutation({
         mutationFn: (data) => {
