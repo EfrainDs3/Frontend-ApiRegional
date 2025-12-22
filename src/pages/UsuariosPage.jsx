@@ -23,6 +23,9 @@ const UsuariosPage = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [usuarioToDelete, setUsuarioToDelete] = useState(null);
     const [sucursalInfo, setSucursalInfo] = useState(null);
+    const [isImporting, setIsImporting] = useState(false);
+    const [showImportResults, setShowImportResults] = useState(false);
+    const [importResults, setImportResults] = useState(null);
     const [filters, setFilters] = useState({
         perfil: null,
         estado: null,
@@ -76,6 +79,40 @@ const UsuariosPage = () => {
         setSelectedUsuario(null);
         setIsAdminMode(false);
         setShowModal(true);
+    };
+
+    const handleImport = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Validar extensión
+        if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+            toast.error('Por favor selecciona un archivo Excel (.xlsx o .xls)');
+            return;
+        }
+
+        setIsImporting(true);
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('/restful/usuarios/import', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            setImportResults(response.data);
+            setShowImportResults(true);
+            queryClient.invalidateQueries(['usuarios']);
+            toast.success(response.data.mensaje);
+        } catch (error) {
+            console.error('Error importing users:', error);
+            toast.error(error.response?.data || 'Error al importar usuarios');
+        } finally {
+            setIsImporting(false);
+            event.target.value = ''; // Reset file input
+        }
     };
 
     const handleEdit = (usuario) => {
@@ -143,14 +180,21 @@ const UsuariosPage = () => {
                     <p className="text-gray-600 mt-1">Administra el acceso y roles del personal</p>
                 </div>
                 <div className="flex gap-3 flex-wrap">
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition">
+                    <input
+                        type="file"
+                        id="importFile"
+                        accept=".xlsx,.xls"
+                        onChange={handleImport}
+                        className="hidden"
+                    />
+                    <label
+                        htmlFor="importFile"
+                        className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition cursor-pointer ${isImporting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                    >
                         <FiUpload size={18} />
-                        <span className="hidden sm:inline">Importar</span>
-                    </button>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700 transition">
-                        <FiDownload size={18} />
-                        <span className="hidden sm:inline">Exportar</span>
-                    </button>
+                        <span className="hidden sm:inline">{isImporting ? 'Importando...' : 'Importar'}</span>
+                    </label>
 
                     <button
                         onClick={handleCreate}
@@ -198,6 +242,60 @@ const UsuariosPage = () => {
                 confirmText="Aceptar"
                 cancelText="Cancelar"
             />
+
+            {/* Import Results Modal */}
+            {showImportResults && importResults && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[80vh] overflow-hidden">
+                        <div className="p-6 border-b">
+                            <h3 className="text-xl font-bold text-coffee-800">Resultados de Importación</h3>
+                            <p className="text-gray-600 mt-1">
+                                {importResults.exitosos} usuarios creados, {importResults.fallidos} errores
+                            </p>
+                        </div>
+                        <div className="p-6 overflow-y-auto max-h-[60vh]">
+                            {importResults.detalles && importResults.detalles.length > 0 && (
+                                <div className="space-y-3">
+                                    {importResults.detalles.map((detalle, index) => (
+                                        <div
+                                            key={index}
+                                            className={`p-4 rounded-lg border ${detalle.error
+                                                    ? 'bg-red-50 border-red-200'
+                                                    : 'bg-green-50 border-green-200'
+                                                }`}
+                                        >
+                                            {detalle.error ? (
+                                                <div>
+                                                    <p className="font-semibold text-red-800">Fila {detalle.fila}</p>
+                                                    <p className="text-red-600 text-sm">{detalle.error}</p>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <p className="font-semibold text-green-800">
+                                                        Fila {detalle.fila}: {detalle.nombre}
+                                                    </p>
+                                                    <div className="mt-2 text-sm text-green-700 space-y-1">
+                                                        <p><strong>Usuario:</strong> {detalle.usuario}</p>
+                                                        <p><strong>Contraseña temporal:</strong> {detalle.contrasena}</p>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-6 border-t flex justify-end">
+                            <button
+                                onClick={() => setShowImportResults(false)}
+                                className="px-4 py-2 bg-terracotta-500 text-white rounded-lg hover:bg-terracotta-600 transition"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
