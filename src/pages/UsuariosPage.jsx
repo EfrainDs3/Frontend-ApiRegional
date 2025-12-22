@@ -78,12 +78,6 @@ const UsuariosPage = () => {
         setShowModal(true);
     };
 
-    const handleCreateAdmin = () => {
-        setSelectedUsuario(null);
-        setIsAdminMode(true);
-        setShowModal(true);
-    };
-
     const handleEdit = (usuario) => {
         setSelectedUsuario(usuario);
         setIsAdminMode(false);
@@ -157,14 +151,7 @@ const UsuariosPage = () => {
                         <FiDownload size={18} />
                         <span className="hidden sm:inline">Exportar</span>
                     </button>
-                    {/* ✅ Nuevo botón para crear administrador */}
-                    <button
-                        onClick={handleCreateAdmin}
-                        className="flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition shadow-md"
-                    >
-                        <FiPlus size={20} />
-                        <span className="hidden sm:inline">Nuevo Admin</span>
-                    </button>
+
                     <button
                         onClick={handleCreate}
                         className="flex items-center gap-2 px-4 py-2 bg-terracotta-500 text-white rounded-lg hover:bg-terracotta-600 transition shadow-md"
