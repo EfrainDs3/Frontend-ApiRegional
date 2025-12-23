@@ -79,7 +79,10 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
             }, 2000);
         },
         onError: (error) => {
-            toast.error('Error al guardar usuario');
+            // Mostrar el mensaje específico del backend si está disponible
+            const errorMessage = error.response?.data || 'Error al guardar usuario';
+            setValidationError(errorMessage);
+            setShowErrorModal(true);
             console.error(error);
         }
     });
@@ -255,14 +258,14 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
                                         onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
                                         required={!usuario}
                                         className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none transition ${formData.contrasena && formData.contrasena.length < 8
-                                                ? 'border-red-400 bg-red-50'
-                                                : 'border-gray-300'
+                                            ? 'border-red-400 bg-red-50'
+                                            : 'border-gray-300'
                                             }`}
                                     />
                                     {formData.contrasena && (
                                         <p className={`text-sm mt-1 ${formData.contrasena.length >= 8
-                                                ? 'text-green-600'
-                                                : 'text-red-500'
+                                            ? 'text-green-600'
+                                            : 'text-red-500'
                                             }`}>
                                             {formData.contrasena.length >= 8
                                                 ? '✓ Contraseña válida'
