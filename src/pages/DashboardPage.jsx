@@ -26,7 +26,7 @@ const DashboardPage = () => {
                 if (user.idSucursal && user.idSucursal > 0) {
                     const usuariosResponse = await axios.get(`/restful/usuarios/sucursal/${user.idSucursal}`);
                     setUsuariosSucursal(usuariosResponse.data);
-                    
+
                     // Cargar info de la sucursal
                     try {
                         const sucursalResponse = await axios.get(`/restful/sucursales/${user.idSucursal}`);
@@ -110,20 +110,6 @@ const DashboardPage = () => {
     // Usuario con accesos - Dashboard normal
     return (
         <div>
-            <h1 className="text-3xl font-bold text-coffee-800 font-serif mb-6">Dashboard</h1>
-
-            {/* Info de sucursal si es administrador local */}
-            {user.idSucursal && user.idSucursal > 0 && (
-                <div className="bg-gradient-to-r from-terracotta-500 to-terracotta-600 text-white p-6 rounded-lg shadow-md mb-6">
-                    <h2 className="text-2xl font-bold mb-2">
-                        🏢 {sucursalInfo?.nombre || `Sucursal #${user.idSucursal}`}
-                    </h2>
-                    {sucursalInfo?.direccion && (
-                        <p className="text-terracotta-100">📍 {sucursalInfo.direccion}</p>
-                    )}
-                </div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white p-6 rounded-lg shadow-md border-l-4 border-terracotta-500">
                     <h3 className="text-lg font-semibold text-gray-700">Bienvenido</h3>

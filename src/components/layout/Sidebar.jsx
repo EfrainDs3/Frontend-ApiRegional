@@ -14,6 +14,7 @@ const Sidebar = () => {
     const [allowedModules, setAllowedModules] = useState([]);
     const [loading, setLoading] = useState(true);
     const [expandedMenus, setExpandedMenus] = useState({});
+    const [sucursalInfo, setSucursalInfo] = useState(null);
 
     // El módulo de seguridad (ID 1) incluye estas páginas
     const securityPages = [
@@ -40,6 +41,16 @@ const Sidebar = () => {
             try {
                 const response = await axios.get(`/accesos/perfil/${user.idPerfil}/completo`);
                 setAllowedModules(response.data);
+
+                // Cargar info de la sucursal si el usuario tiene una asignada
+                if (user.idSucursal && user.idSucursal > 0) {
+                    try {
+                        const sucursalResponse = await axios.get(`/restful/sucursales/${user.idSucursal}`);
+                        setSucursalInfo(sucursalResponse.data);
+                    } catch (err) {
+                        console.log('No se pudo cargar info de sucursal');
+                    }
+                }
             } catch (err) {
                 console.error('Error al cargar módulos permitidos:', err);
             } finally {
@@ -91,18 +102,31 @@ const Sidebar = () => {
                 }`}
         >
             {/* Logo */}
-            <div className="p-4 border-b border-coffee-800 flex items-center justify-between">
+            <div className="p-4 border-b border-coffee-800">
                 {!collapsed && (
-                    <h1 className="font-serif font-bold text-lg truncate">
-                        Comidas Regionales
-                    </h1>
+                    <div>
+                        <h1 className="font-serif font-bold text-lg truncate mb-3">
+                            Comidas Regionales
+                        </h1>
+                        {sucursalInfo && (
+                            <div className="bg-gradient-to-r from-terracotta-500 to-terracotta-600 rounded-lg p-3 mb-2">
+                                <div className="flex items-start gap-2">
+                                    <span className="text-2xl">🏢</span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-white font-bold text-base truncate">
+                                            {sucursalInfo.nombre}
+                                        </p>
+                                        {sucursalInfo.direccion && (
+                                            <p className="text-terracotta-100 text-xs truncate mt-0.5">
+                                                📍 {sucursalInfo.direccion}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 )}
-                <button
-                    onClick={() => setCollapsed(!collapsed)}
-                    className="p-2 hover:bg-coffee-800 rounded-lg transition"
-                >
-                    {collapsed ? <FiChevronRight /> : <FiChevronLeft />}
-                </button>
             </div>
 
             {/* Navigation */}
