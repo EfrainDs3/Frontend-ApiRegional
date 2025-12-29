@@ -90,6 +90,20 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
     const handleSubmit = (e) => {
         e.preventDefault();
 
+        // Validación de DNI (8 dígitos)
+        if (!formData.dniUsuario || !/^\d{8}$/.test(formData.dniUsuario)) {
+            setValidationError('El DNI debe tener exactamente 8 dígitos');
+            setShowErrorModal(true);
+            return;
+        }
+
+        // Validación de teléfono (9 dígitos)
+        if (formData.telefono && !/^\d{9}$/.test(formData.telefono)) {
+            setValidationError('El número de celular debe tener exactamente 9 dígitos');
+            setShowErrorModal(true);
+            return;
+        }
+
         // Validación de contraseña
         if (!usuario && (!formData.contrasena || formData.contrasena.length < 8)) {
             setValidationError('La contraseña debe tener al menos 8 caracteres');
@@ -216,18 +230,30 @@ const UsuarioModal = ({ usuario, onClose, isAdmin = false }) => {
                                     <input
                                         type="text"
                                         value={formData.dniUsuario}
-                                        onChange={(e) => setFormData({ ...formData, dniUsuario: e.target.value })}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, ''); // Solo números
+                                            if (value.length <= 8) {
+                                                setFormData({ ...formData, dniUsuario: value });
+                                            }
+                                        }}
                                         required
+                                        maxLength={8}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono (Celular)</label>
                                     <input
                                         type="text"
                                         value={formData.telefono}
-                                        onChange={(e) => setFormData({ ...formData, telefono: e.target.value })}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, ''); // Solo números
+                                            if (value.length <= 9) {
+                                                setFormData({ ...formData, telefono: value });
+                                            }
+                                        }}
+                                        maxLength={9}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-terracotta-500 outline-none"
                                     />
                                 </div>
