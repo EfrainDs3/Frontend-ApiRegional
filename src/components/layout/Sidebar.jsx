@@ -46,9 +46,21 @@ const Sidebar = () => {
                 if (user.idSucursal && user.idSucursal > 0) {
                     try {
                         const sucursalResponse = await axios.get(`/restful/sucursales/${user.idSucursal}`);
-                        setSucursalInfo(sucursalResponse.data);
+                        const sucursalData = sucursalResponse.data;
+
+                        // Cargar el nombre del restaurante
+                        if (sucursalData && sucursalData.idRestaurante) {
+                            try {
+                                const restauranteResponse = await axios.get(`/api/restaurantes/${sucursalData.idRestaurante}`);
+                                sucursalData.nombreRestaurante = restauranteResponse.data.nombre;
+                            } catch (rErr) {
+                                console.log('No se pudo cargar info de restaurante', rErr);
+                            }
+                        }
+
+                        setSucursalInfo(sucursalData);
                     } catch (err) {
-                        console.log('No se pudo cargar info de sucursal');
+                        console.log('No se pudo cargar info de sucursal', err);
                     }
                 }
             } catch (err) {
@@ -114,10 +126,13 @@ const Sidebar = () => {
                                     <span className="text-2xl">🏢</span>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-white font-bold text-base truncate">
-                                            {sucursalInfo.nombre}
+                                            {sucursalInfo.nombreRestaurante || 'Restaurante'}
+                                        </p>
+                                        <p className="text-terracotta-100 text-xs mt-0.5 uppercase tracking-wide font-semibold">
+                                            Sede: {sucursalInfo.nombre}
                                         </p>
                                         {sucursalInfo.direccion && (
-                                            <p className="text-terracotta-100 text-xs truncate mt-0.5">
+                                            <p className="text-terracotta-100 text-xs truncate">
                                                 📍 {sucursalInfo.direccion}
                                             </p>
                                         )}
