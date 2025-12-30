@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { perfilesAPI } from '../services/api';
 import axios from '../config/axios';
 
 const DashboardPage = () => {
@@ -24,8 +25,22 @@ const DashboardPage = () => {
 
                 // Si el usuario es administrador y tiene sucursal asignada, cargar usuarios de esa sucursal
                 if (user.idSucursal && user.idSucursal > 0) {
-                    const usuariosResponse = await axios.get(`/restful/usuarios/sucursal/${user.idSucursal}`);
-                    setUsuariosSucursal(usuariosResponse.data);
+                    // Cargar usuarios y perfiles para mapear nombres
+                    const [usuariosResponse, perfilesResponse] = await Promise.all([
+                        axios.get(`/restful/usuarios/sucursal/${user.idSucursal}`),
+                        perfilesAPI.getAll()
+                    ]);
+
+                    // Crear un mapa de perfiles por ID
+                    const perfilesMap = new Map(perfilesResponse.data.map(p => [p.idPerfil, p.nombrePerfil]));
+
+                    // Agregar nombre del perfil a cada usuario
+                    const usuariosConPerfil = usuariosResponse.data.map(usuario => ({
+                        ...usuario,
+                        nombrePerfil: perfilesMap.get(usuario.rolId) || 'Sin Perfil'
+                    }));
+
+                    setUsuariosSucursal(usuariosConPerfil);
 
                     // Cargar info de la sucursal
                     try {
@@ -185,7 +200,7 @@ const DashboardPage = () => {
                                     <tr key={u.idUsuario} className="border-b hover:bg-gray-50">
                                         <td className="px-4 py-3 text-gray-800">{u.nombreUsuario} {u.apellidos}</td>
                                         <td className="px-4 py-3 text-gray-600">{u.nombreUsuarioLogin}</td>
-                                        <td className="px-4 py-3 text-gray-600">ID: {u.rolId}</td>
+                                        <td className="px-4 py-3 text-gray-600">{u.nombrePerfil}</td>
                                         <td className="px-4 py-3">
                                             <span className={`px-3 py-1 rounded-full text-xs font-semibold ${u.estado === 1 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                                                 {u.estado === 1 ? '✓ Activo' : 'Inactivo'}
